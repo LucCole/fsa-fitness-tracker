@@ -164,7 +164,7 @@ const Routines = ({routines, setRoutines, myRoutines, setMyRoutines, activities,
             ?
             <div>
                 {
-                    typeof myRoutines === 'object'
+                    myRoutines.length > 0
                     ?
                     myRoutines.map((myRoutine) => {
 

@@ -5,7 +5,7 @@
 // export const COHORT_NAME = '2104-ECE-RM-WEB-PT/';
 // export const API_URL = BASE_URL + COHORT_NAME;
 
-export const API_URL = 'https://fsa-fitness-tracker.herokuapp.com/api/';
+export const API_URL = 'http://localhost:3001/api/';
 
 export const callApi = async ({ url, method, token, body }) => {
   
