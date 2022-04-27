@@ -6,118 +6,108 @@ import Header from './Header';
 
 const App = () => {
 
-    const [token, setToken] = useState('');
-    const [userData, setUserData] = useState({});
-    const [myRoutines, setMyRoutines] = useState([]);
-    const [routines, setRoutines] = useState([]);
-    const [activities, setActivities] = useState([]);
-    // const [activitiesList, setActivities] = useState([]);
+  const [token, setToken] = useState('');
+  const [userData, setUserData] = useState({});
+  const [myRoutines, setMyRoutines] = useState([]);
+  const [routines, setRoutines] = useState([]);
+  const [activities, setActivities] = useState([]);
 
-    const isLoggedIn = userData.username !== undefined;
+  const isLoggedIn = userData.username !== undefined;
 
-    useEffect(async () => {
+  useEffect(async () => {
 
-        // would it be better to do it like this? only gets called when we first arive at the page... so i guess this is correct
-        if(routines.length === 0) {
-            const fetchedRoutines = await callApi({
-                url: 'routines'
-            });;
+    if(routines.length === 0) {
+      const fetchedRoutines = await callApi({
+        url: 'routines'
+      });;
 
-            setRoutines(fetchedRoutines);
-        }
+      setRoutines(fetchedRoutines);
+    }
 
-        if(activities.length === 0) {
-            const fetchedActivities = await callApi({
-                url: 'activities'
-            });;
+    if(activities.length === 0) {
+      const fetchedActivities = await callApi({
+        url: 'activities'
+      });;
 
-            setActivities(fetchedActivities);
-        }
+      setActivities(fetchedActivities);
+    }
 
+    if(myRoutines.length === 0) {
 
+      if(userData.username !== undefined){
+        const fetchedMyRoutines = await callApi({
+          url: `users/${userData.username}/routines`,
+          token
+        });
+        setMyRoutines(fetchedMyRoutines);
+      }
+    }
+  });
 
-        if(myRoutines.length === 0) {
+  useEffect(async () => {
 
-        
-            const fetchedMyRoutines = await callApi({
-                url: `users/${userData.username}/routines`,
-                token
-            });
+    if (!token) {
+      setToken(localStorage.getItem('fitness-tracker-token'));
+      return;
+    }
 
-
-            setMyRoutines(fetchedMyRoutines);
-        }
-
-
+    const data = await callApi({
+      url: 'users/me',
+      token
     });
 
-    // calls the API 
-    useEffect(async () => {
+    setUserData(data);
 
-        if (!token) {
-            setToken(localStorage.getItem('fitness-tracker-token'));
-            return;
-        }
-        //const data = await fetchUserData(token);
+  }, [token]);
 
-        const data = await callApi({
-            url: 'users/me',
-            token
-        });
+  return (
+    <>
+      <Header 
+      isLoggedIn={isLoggedIn} 
+      setUserData={setUserData} 
+      setToken={setToken} 
+      token={token} 
+      />
+      
+      <Switch>
+        <Route exact path="/">
+          <Home />
+        </Route>
+        <Route path="/register">
+          <AccountForm action="register" setToken={setToken}/>
+        </Route>
+        <Route path="/login">
+          <AccountForm action="login" setToken={setToken}/>
+        </Route>
 
-        setUserData(data);
+        <Route exact path="/routines">
+          <Routines 
+          routines={routines} 
+          setRoutines={setRoutines} 
+          myRoutines={myRoutines} 
+          setMyRoutines={setMyRoutines} 
+          activities={activities} 
+          isLoggedIn={isLoggedIn} 
+          token={token}
+          userData={userData}
+          />
+        </Route>
 
-    }, [token]);
+        <Route exact path="/activities">
+          <Activities activities={activities} setActivities={setActivities} isLoggedIn={isLoggedIn} token={token}/>
+        </Route>
 
-    return (
-        <>
-            <Header 
-            isLoggedIn={isLoggedIn} 
-            setUserData={setUserData} 
-            setToken={setToken} 
-            token={token} 
-            />
-            
-            <Switch>
-                <Route exact path="/">
-                    <Home />
-                </Route>
-                <Route path="/register">
-                    <AccountForm action="register" setToken={setToken}/>
-                </Route>
-                <Route path="/login">
-                    <AccountForm action="login" setToken={setToken}/>
-                </Route>
+        <Route path="/routines/activities/:activityId">
+          <RoutinesByActivity/>
+        </Route>
 
-                <Route exact path="/routines">
-                    <Routines 
-                    routines={routines} 
-                    setRoutines={setRoutines} 
-                    myRoutines={myRoutines} 
-                    setMyRoutines={setMyRoutines} 
-                    activities={activities} 
-                    isLoggedIn={isLoggedIn} 
-                    token={token}
-                    userData={userData}
-                    />
-                </Route>
+        <Route path="/routines/user/:username">
+          <RoutinesByUser/>
+        </Route>
 
-                <Route exact path="/activities">
-                    <Activities activities={activities} setActivities={setActivities} isLoggedIn={isLoggedIn} token={token}/>
-                </Route>
-
-                {/* Should this be activity?? */}
-                <Route path="/routines/activities/:activityId">
-                    <RoutinesByActivity/>
-                </Route>
-
-                <Route path="/routines/user/:username">
-                    <RoutinesByUser/>
-                </Route>
-
-            </Switch>
-        </>
-    );
+      </Switch>
+    </>
+  );
 };
 
 export default App;
